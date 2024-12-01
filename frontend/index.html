@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles-minimal.css">
+  <title>Frontend - Agregar Mensaje</title>
+</head>
+<body>
+  <h1>Agregar un Mensaje</h1>
+  <form id="message-form">
+    <label for="message">Mensaje: </label>
+    <input type="text" id="message" name="message" required>
+    <button type="submit">Enviar</button>
+  </form>
+  
+  <h2>Mensajes Guardados</h2>
+  <ul id="messages-list"></ul>
+
+  <script>
+    let messages = [];
+
+    async function fetchMessages() {
+      try {
+        const response = await fetch("http://localhost:5000/api/messages");
+        if (!response.ok) {
+          throw new Error('Error al cargar los mensajes del backend');
+        }
+        const data = await response.json();
+        messages = data;
+        displayMessages();
+      } catch (error) {
+        console.error("Error al conectar con el backend:", error);
+        alert("Hubo un error al cargar los mensajes.");
+      }
+    }
+
+    async function addMessage(message) {
+      try {
+        const response = await fetch("http://localhost:5000/api/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message })
+        });
+        if (!response.ok) {
+          throw new Error('Error al agregar el mensaje al backend');
+        }
+        const data = await response.json();
+        messages.push(data);
+        displayMessages();
+      } catch (error) {
+        console.error("Error al enviar el mensaje al backend:", error);
+        alert("Hubo un error al enviar el mensaje.");
+      }
+    }
+
+    async function deleteMessage(id) {
+      try {
+        const response = await fetch(`http://localhost:5000/api/messages/${id}`, {
+          method: "DELETE"
+        });
+        if (!response.ok) {
+          throw new Error('Error al eliminar el mensaje del backend');
+        }
+        messages = messages.filter(msg => msg._id !== id);
+        displayMessages();
+      } catch (error) {
+        console.error("Error al eliminar el mensaje del backend:", error);
+        alert("Hubo un error al eliminar el mensaje.");
+      }
+    }
+
+    document.getElementById('message-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const message = document.getElementById('message').value;
+      addMessage(message);
+      document.getElementById('message').value = '';
+    });
+
+    function displayMessages() {
+      const messagesList = document.getElementById("messages-list");
+      messagesList.innerHTML = '';
+      messages.forEach(msg => {
+        const li = document.createElement("li");
+        li.textContent = msg.message;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Eliminar";
+        deleteButton.addEventListener("click", () => deleteMessage(msg._id));
+
+        li.appendChild(deleteButton);
+        messagesList.appendChild(li);
+      });
+    }
+
+    window.onload = fetchMessages;
+  </script>
+</body>
+</html>
