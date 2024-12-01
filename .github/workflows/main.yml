@@ -61,27 +61,28 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.AZURE_VM_PRIVATE_KEY }}
 
-    - name: Verify SSH connection and deploy
+    - name: Verify SSH connection
       run: |
-        if ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} "exit"; then
-          echo "SSH connection established"
-          ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
-            # Ingresar al directorio home del usuario
-            cd /home/${{ secrets.AZURE_VM_USERNAME }}
+        ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} "exit"
+      shell: bash
 
-            # Clonar el repositorio si no existe
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/fera1991/AzureDevOps.git .
-              cd AzureDevOps
-            else
-              git pull origin main
-              cd AzureDevOps
-            fi
-            # Ejecutar docker-compose para desplegar la aplicación
-            docker-compose -f docker-compose.yml pull
-            docker-compose -f docker-compose.yml up -d
-          EOF
-        else
-          echo "SSH connection failed"
-          exit 1
-        fi
+    - name: Deploy application
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
+          # Ingresar al directorio home del usuario
+          cd /home/${{ secrets.AZURE_VM_USERNAME }}
+
+          # Clonar el repositorio si no existe
+          if [ ! -d ".git" ]; then
+            git clone https://github.com/fera1991/AzureDevOps.git .
+            cd AzureDevOps
+          else
+            git pull origin main
+            cd AzureDevOps
+          fi
+
+          # Ejecutar docker-compose para desplegar la aplicación
+          docker-compose -f docker-compose.yml pull
+          docker-compose -f docker-compose.yml up -d
+        EOF
+      shell: bash
