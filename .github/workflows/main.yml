@@ -85,12 +85,20 @@ jobs:
 
           # Verificar la existencia del archivo docker-compose.yml
           if [ -f "docker-compose.yml" ]; then
-            # Ejecutar docker-compose para desplegar la aplicación
-            docker-compose -f docker-compose.yml pull
-            docker-compose -f docker-compose.yml up -d
+            # Ejecutar docker-compose para desplegar la aplicación con sudo
+            sudo docker-compose -f docker-compose.yml pull
+            sudo docker-compose -f docker-compose.yml up -d
           else
             echo "Archivo docker-compose.yml no encontrado"
             exit 1
           fi
+        EOF
+      shell: bash
+
+    - name: Add user to docker group
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
+          sudo usermod -aG docker $USER
+          sudo systemctl restart docker
         EOF
       shell: bash
