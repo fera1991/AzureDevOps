@@ -4,15 +4,15 @@ const { MongoClient } = require("mongodb");
 const cors = require("cors");  // Importa el middleware CORS
 
 const app = express();
-const PORT = `${process.env.PORT}`;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());  // Habilita CORS para todas las solicitudes
 app.use(express.json());  // Para parsear los JSON en las solicitudes
 
 // Configuración de Cosmos DB para MongoDB usando las variables de entorno
-const mongoUrl = `${process.env.COSMOS_DB_ENDPOINT}`;
+const mongoUrl = process.env.COSMOS_DB_ENDPOINT;
 const client = new MongoClient(mongoUrl);
-const dbName = `${process.env.COSMOS_DB_COLLECTION}`;
+const dbName = process.env.COSMOS_DB_COLLECTION;
 let messagesCollection;
 
 // Conectar a Cosmos DB usando la API de MongoDB
@@ -66,6 +66,11 @@ app.delete("/api/messages/:id", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+let server;
+if (require.main === module) {
+  server = app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}
+
+module.exports = { app, server, client }; // Exportar el servidor y el cliente de la base de datos para las pruebas
