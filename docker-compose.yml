@@ -1,0 +1,23 @@
+version: '3'
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8080:80"
+    networks:
+      - my-network
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    networks:
+      - my-network
+    env_file:
+      - ./backend/.env
+
+networks:
+  my-network:
+    driver: bridge
