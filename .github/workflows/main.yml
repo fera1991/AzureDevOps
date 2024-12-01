@@ -72,17 +72,25 @@ jobs:
           # Ingresar al directorio home del usuario
           cd /home/${{ secrets.AZURE_VM_USERNAME }}
 
-          # Clonar el repositorio si no existe
-          if [ ! -d ".git" ]; then
-            git clone https://github.com/fera1991/AzureDevOps.git .
-            cd AzureDevOps
-          else
-            git pull origin main
-            cd AzureDevOps
+          # Eliminar el directorio de la aplicación si ya existe
+          if [ -d "AzureDevOps" ]; then
+            rm -rf AzureDevOps
           fi
 
-          # Ejecutar docker-compose para desplegar la aplicación
-          docker-compose -f docker-compose.yml pull
-          docker-compose -f docker-compose.yml up -d
+          # Clonar el repositorio
+          git clone https://github.com/fera1991/AzureDevOps.git
+
+          # Navegar al directorio del repositorio
+          cd AzureDevOps
+
+          # Verificar la existencia del archivo docker-compose.yml
+          if [ -f "docker-compose.yml" ]; then
+            # Ejecutar docker-compose para desplegar la aplicación
+            docker-compose -f docker-compose.yml pull
+            docker-compose -f docker-compose.yml up -d
+          else
+            echo "Archivo docker-compose.yml no encontrado"
+            exit 1
+          fi
         EOF
       shell: bash
