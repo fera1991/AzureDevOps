@@ -94,11 +94,3 @@ jobs:
           fi
         EOF
       shell: bash
-
-    - name: Add user to docker group
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
-          sudo usermod -aG docker $USER
-          sudo systemctl restart docker
-        EOF
-      shell: bash
