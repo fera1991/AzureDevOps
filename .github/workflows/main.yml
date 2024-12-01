@@ -56,21 +56,32 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: SSH into Azure VM
-      uses: appleboy/ssh-action@v0.1.0
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
       with:
-        host: ${{ secrets.AZURE_VM_HOST }}
-        username: ${{ secrets.AZURE_VM_USERNAME }}
-        key: ${{ secrets.AZURE_VM_PRIVATE_KEY }}
-        script: |
-          # Clonar el repositorio si no existe
-          if [ ! -d ".git" ]; then
-            git clone https://github.com/fera1991/AzureDevOps.git .
-            cd AzureDevOps
-          else
-            cd AzureDevOps
-            git pull origin main
-          fi
-          # Ejecutar docker-compose para desplegar la aplicación
-          docker-compose -f docker-compose.yml pull
-          docker-compose -f docker-compose.yml up -d
+        ssh-private-key: ${{ secrets.AZURE_VM_PRIVATE_KEY }}
+
+    - name: Verify SSH connection and deploy
+      run: |
+        if ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} "exit"; then
+          echo "SSH connection established"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
+            # Ingresar al directorio home del usuario
+            cd /home/${{ secrets.AZURE_VM_USERNAME }}
+
+            # Clonar el repositorio si no existe
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/fera1991/AzureDevOps.git .
+              cd AzureDevOps
+            else
+              git pull origin main
+              cd AzureDevOps
+            fi
+            # Ejecutar docker-compose para desplegar la aplicación
+            docker-compose -f docker-compose.yml pull
+            docker-compose -f docker-compose.yml up -d
+          EOF
+        else
+          echo "SSH connection failed"
+          exit 1
+        fi
