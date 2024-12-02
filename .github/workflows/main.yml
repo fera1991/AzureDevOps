@@ -52,13 +52,13 @@ jobs:
             # Ingresar al directorio home del usuario
             cd /home/${{ secrets.AZURE_VM_USERNAME }}
 
-            # Verificar si el archivo AzureDevOps existe
-            if [ -f "AzureDevOps" ]; then
-              echo "Archivo AzureDevOps encontrado. Actualizando el repositorio."
+            # Verificar si la carpeta AzureDevOps existe
+            if [ -d "AzureDevOps" ]; then
+              echo "Carpeta AzureDevOps encontrada. Actualizando el repositorio."
               cd AzureDevOps
               git pull origin main
             else
-              echo "Archivo AzureDevOps no encontrado. Clonando el repositorio."
+              echo "Carpeta AzureDevOps no encontrada. Clonando el repositorio."
               # Clonar el repositorio
               git clone https://github.com/fera1991/AzureDevOps.git
               cd AzureDevOps
