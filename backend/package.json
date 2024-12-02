@@ -3,16 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-      "test": "jest", 
-      "test:watch": "jest --watch", 
-      "start": "node server.js"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@azure/cosmos": "^4.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
