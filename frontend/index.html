@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles-minimal.css">
+  <link rel="stylesheet" href="styles-modern.css">
   <title>Frontend - Agregar Mensaje</title>
 </head>
 <body>
@@ -20,9 +20,11 @@
   <script>
     let messages = [];
 
+    const url = `http://40.80.155.217:5000`
+
     async function fetchMessages() {
       try {
-        const response = await fetch("http://localhost:5000/api/messages");
+        const response = await fetch(`${url}/api/messages`);
         if (!response.ok) {
           throw new Error('Error al cargar los mensajes del backend');
         }
@@ -37,7 +39,7 @@
 
     async function addMessage(message) {
       try {
-        const response = await fetch("http://localhost:5000/api/messages", {
+        const response = await fetch(`${url}/api/messages`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -58,7 +60,7 @@
 
     async function deleteMessage(id) {
       try {
-        const response = await fetch(`http://localhost:5000/api/messages/${id}`, {
+        const response = await fetch(`${url}/api/messages/${id}`, {
           method: "DELETE"
         });
         if (!response.ok) {
