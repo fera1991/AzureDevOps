@@ -11,21 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
 
-    - name: Install dependencies
-      run: npm install
-      working-directory: ./backend
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./backend
 
-    - name: Run tests
-      run: npm test
-      working-directory: ./backend
+      - name: Run tests
+        run: npm test
+        working-directory: ./backend
 
   deploy:
     runs-on: ubuntu-latest
@@ -33,49 +33,48 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.AZURE_VM_PRIVATE_KEY }}
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AZURE_VM_PRIVATE_KEY }}
 
-    - name: Verify SSH connection
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} "exit"
-      shell: bash
+      - name: Verify SSH connection
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} "exit"
+        shell: bash
 
-     - name: Deploy application
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
-          # Ingresar al directorio home del usuario
-          cd /home/${{ secrets.AZURE_VM_USERNAME }}
+      - name: Deploy application
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USERNAME }}@${{ secrets.AZURE_VM_HOST }} << 'EOF'
+            # Ingresar al directorio home del usuario
+            cd /home/${{ secrets.AZURE_VM_USERNAME }}
 
-          # Verificar si el archivo AzureDevOps existe
-          if [ -f "AzureDevOps" ]; then
-            echo "Archivo AzureDevOps encontrado. Actualizando el repositorio."
-            cd AzureDevOps
-            git pull origin main
-          else
-            echo "Archivo AzureDevOps no encontrado. Clonando el repositorio."
-            # Clonar el repositorio
-            git clone https://github.com/fera1991/AzureDevOps.git
-            cd AzureDevOps
-          fi
+            # Verificar si el archivo AzureDevOps existe
+            if [ -f "AzureDevOps" ]; then
+              echo "Archivo AzureDevOps encontrado. Actualizando el repositorio."
+              cd AzureDevOps
+              git pull origin main
+            else
+              echo "Archivo AzureDevOps no encontrado. Clonando el repositorio."
+              # Clonar el repositorio
+              git clone https://github.com/fera1991/AzureDevOps.git
+              cd AzureDevOps
+            fi
 
-          # Verificar la existencia del archivo docker-compose.yml
-          if [ -f "docker-compose.yml" ]; then
-            echo "Archivo docker-compose.yml encontrado. Iniciando contenedores."
-            # Construir y ejecutar contenedores localmente
-            sudo docker-compose down --remove-orphans
-            sudo docker-compose pull
-            sudo docker-compose build --no-cache
-            sudo docker-compose up -d --force-recreate --remove-orphans
-          else
-            echo "Archivo docker-compose.yml no encontrado."
-            exit 1
-          fi
-        EOF
-      shell: bash
-
+            # Verificar la existencia del archivo docker-compose.yml
+            if [ -f "docker-compose.yml" ]; then
+              echo "Archivo docker-compose.yml encontrado. Iniciando contenedores."
+              # Construir y ejecutar contenedores localmente
+              sudo docker-compose down --remove-orphans
+              sudo docker-compose pull
+              sudo docker-compose build --no-cache
+              sudo docker-compose up -d --force-recreate --remove-orphans
+            else
+              echo "Archivo docker-compose.yml no encontrado."
+              exit 1
+            fi
+          EOF
+        shell: bash
